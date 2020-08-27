@@ -185,6 +185,10 @@ DELIMITER ;
 \! echo "Adding category_id column to activation table"
 ALTER TABLE activation ADD COLUMN `category_id` int AFTER `unregdate`;
 
+\! echo "Altering table 'node_category'...";
+ALTER TABLE node_category
+  ADD COLUMN IF NOT EXISTS `parent_id` int NULL default NULL;
+
 \! echo "Incrementing PacketFence schema version...";
 INSERT IGNORE INTO pf_version (id, version) VALUES (@VERSION_INT, CONCAT_WS('.', @MAJOR_VERSION, @MINOR_VERSION, @SUBMINOR_VERSION));
 
