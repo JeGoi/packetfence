@@ -81,9 +81,28 @@ sub nodecategory_populate_from_config {
         $logger->error($msg);
         return;
     }
-    while(my ($id, $role) = each(%$config)) {
-        nodecategory_upsert($id, %$role);
+
+    for my $args (_order_nodecategory_config($config)) {
+        nodecategory_upsert($args->[0], %{$args->[1]});
     }
+}
+
+sub _order_nodecategory_config {
+    my ($config) = @_;
+    my %t;
+    while (my ($id, $role) = each(%$config)) {
+        my $parent = $role->{parent} // '';
+        push @{$t{$parent}}, [$id, $role];
+    }
+
+    return [_flatten_nodecategory($t{''}, \%t)];
+}
+
+sub _flatten_nodecategory {
+    my ( $parents, $h ) = @_;
+    return @$parents,
+      map { _flatten_nodecategory( $h->{$_}, $h ) }
+      grep { exists $h->{$_} } map { $_->[0] } @$parents;
 }
 
 =item nodecategory_upsert
