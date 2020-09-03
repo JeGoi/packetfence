@@ -82,7 +82,8 @@ sub nodecategory_populate_from_config {
         return;
     }
 
-    for my $args (_order_nodecategory_config($config)) {
+    my @entries = _order_nodecategory_config($config);
+    for my $args (@entries) {
         nodecategory_upsert($args->[0], %{$args->[1]});
     }
 }
@@ -95,7 +96,7 @@ sub _order_nodecategory_config {
         push @{$t{$parent}}, [$id, $role];
     }
 
-    return [_flatten_nodecategory($t{''}, \%t)];
+    return _flatten_nodecategory($t{''}, \%t);
 }
 
 sub _flatten_nodecategory {
@@ -124,11 +125,12 @@ sub nodecategory_upsert {
         die "Missing ID for nodecategory_upsert" unless($id);
 
         $logger->info("Inserting/updating role with ID $id");
+        my $parent = $data{parent};
         my $obj = pf::dal::node_category->new({
             name => $id,
             max_nodes_per_pid => $data{max_nodes_per_pid},
             notes => $data{notes},
-
+            parent_id => defined $parent ? \['(SELECT category_id FROM (SELECT category_id FROM node_category WHERE name = ?) x )', $parent] : undef,
         });
         my ($status) = $obj->upsert;
         if (is_error($status)) {
