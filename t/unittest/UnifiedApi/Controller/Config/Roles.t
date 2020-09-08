@@ -26,8 +26,12 @@ BEGIN {
     use setup_test_config;
 }
 
-use Test::More tests => 9;
+use pf::ConfigStore::Roles;
+use Test::More tests => 11;
 use Test::Mojo;
+use Utils;
+
+my ($fh, $filename) = Utils::tempfileForConfigStore("pf::ConfigStore::Roles");
 
 #This test will running last
 use Test::NoWarnings;
@@ -48,6 +52,9 @@ $t->post_ok($collection_base_url, {'Content-Type' => 'application/json'} => '{')
 
 $t->delete_ok("$base_url/default")
   ->status_is(422);
+
+$t->post_ok($collection_base_url => json => { id => 'bob' })
+  ->status_is(201);
 
 =head1 AUTHOR
 
