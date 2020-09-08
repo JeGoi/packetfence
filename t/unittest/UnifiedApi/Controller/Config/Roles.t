@@ -27,7 +27,7 @@ BEGIN {
 }
 
 use pf::ConfigStore::Roles;
-use Test::More tests => 11;
+use Test::More tests => 15;
 use Test::Mojo;
 use Utils;
 
@@ -55,6 +55,12 @@ $t->delete_ok("$base_url/default")
 
 $t->post_ok($collection_base_url => json => { id => 'bob' })
   ->status_is(201);
+
+$t->patch_ok("$base_url/r1" => json => { parent => 'r2' })
+  ->status_is(422);
+
+$t->patch_ok("$base_url/r1" => json => { parent => 'r3' })
+  ->status_is(422);
 
 =head1 AUTHOR
 
